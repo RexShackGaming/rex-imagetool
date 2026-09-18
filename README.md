@@ -13,6 +13,7 @@ A standalone desktop tool with a simple graphical interface that resizes every i
 - **Progress bar and status log** — shows how many images have been processed and reports any files that failed to convert.
 - **Originals untouched** — the tool only reads from the input folder and writes new files to the output folder; nothing in the input folder is modified or deleted.
 - **Automatic setup** — the included launcher (`run.bat`) checks for Python and the required Pillow library, installing either one automatically if missing.
+- **Remembers your folders** — the input folder, output folder, and "keep aspect ratio" choice are saved automatically and restored the next time you open the tool.
 
 ### Supported file types
 
@@ -53,7 +54,7 @@ python bulk_resize.py
 
 ## Configuration
 
-The tool is configured entirely through its window — there is no settings file to edit.
+The tool is configured entirely through its window. Your last-used input folder, output folder, and "keep aspect ratio" setting are saved automatically to `bulk_resize_settings.json` (created next to `bulk_resize.py` the first time you browse to a folder or run a resize) and are loaded again the next time you open the tool, so you don't need to re-select them every time. There's nothing to edit in this file by hand — just delete it if you ever want to reset to a blank state.
 
 | Setting | Description |
 |---|---|
@@ -71,7 +72,7 @@ TARGET_SIZE = (125, 125)
 
 ## Usage
 
-1. Run `run.bat` (or `python bulk_resize.py`).
+1. Run `run.bat` (or `python bulk_resize.py`). If you've used the tool before, your input and output folders are already filled in from last time.
 2. Click **Browse...** next to *Input folder* and select the folder containing your images (or use the included `input` folder).
 3. Click **Browse...** next to *Output folder* and select where resized images should be saved (or use the included `output` folder).
 4. Choose whether to keep the aspect ratio (recommended) or stretch images to fill the square.

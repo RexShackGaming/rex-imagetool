@@ -8,6 +8,7 @@ Run with:  python bulk_resize.py
 Requires:  Pillow  (pip install Pillow)
 """
 
+import json
 import os
 import threading
 import tkinter as tk
@@ -19,6 +20,10 @@ TARGET_SIZE = (125, 125)
 SUPPORTED_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".tif", ".webp"
 }
+
+SETTINGS_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "bulk_resize_settings.json"
+)
 
 
 class BulkResizeApp(tk.Tk):
@@ -34,6 +39,41 @@ class BulkResizeApp(tk.Tk):
         self.status_text = tk.StringVar(value="Choose an input and output folder to begin.")
 
         self._build_ui()
+        self._load_settings()
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    # ---------- Settings persistence ----------
+    def _load_settings(self):
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            return
+
+        in_folder = data.get("input_folder", "")
+        out_folder = data.get("output_folder", "")
+        if in_folder and os.path.isdir(in_folder):
+            self.input_folder.set(in_folder)
+        if out_folder:
+            self.output_folder.set(out_folder)
+        if "keep_aspect" in data:
+            self.keep_aspect.set(bool(data["keep_aspect"]))
+
+    def _save_settings(self):
+        data = {
+            "input_folder": self.input_folder.get().strip(),
+            "output_folder": self.output_folder.get().strip(),
+            "keep_aspect": self.keep_aspect.get(),
+        }
+        try:
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except OSError:
+            pass
+
+    def _on_close(self):
+        self._save_settings()
+        self.destroy()
 
     # ---------- UI ----------
     def _build_ui(self):
@@ -105,11 +145,13 @@ class BulkResizeApp(tk.Tk):
         folder = filedialog.askdirectory(title="Select input folder")
         if folder:
             self.input_folder.set(folder)
+            self._save_settings()
 
     def browse_output(self):
         folder = filedialog.askdirectory(title="Select output folder")
         if folder:
             self.output_folder.set(folder)
+            self._save_settings()
 
     def start_resize(self):
         in_folder = self.input_folder.get().strip()
@@ -123,6 +165,7 @@ class BulkResizeApp(tk.Tk):
             return
 
         os.makedirs(out_folder, exist_ok=True)
+        self._save_settings()
 
         self.run_button.config(state="disabled")
         self.status_text.set("Scanning input folder...")
